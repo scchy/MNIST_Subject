@@ -8,13 +8,27 @@ import numpy as np
 from sklearn.datasets import fetch_mldata
 import warnings
 warnings.filterwarnings(action='ignore')
+import time
+from functools import wraps
+
+
+def clock(func):
+    @wraps(func)
+    def clocked(*args, **kwargs):
+        st = time.perf_counter()
+        res = func(*args, **kwargs)
+        take_time = time.perf_counter() - st
+        fmt = '{func_name}, take_time:{take_time:.5f}s >> {res}'
+        print(fmt.format(func_name=func.__name__, take_time=take_time, res=res))
+        return res
+    return clocked
 
 def get_ministdata():
     data_home = r'D:\Python_data\My_python\Projects\MNIST_Subject\mnist_data'
     mnist = fetch_mldata('MNIST original', data_home=data_home)
     return pd.DataFrame(np.c_[mnist['data']/255, mnist['target']])
 
-
+@clock
 def sklearn_clf(clf_model_func, tr, te):
     clf_model = clf_model_func()
     clf_model.fit(tr.iloc[:, :-1].values, tr.iloc[:, -1].values)
@@ -33,9 +47,7 @@ if __name__ == '__main__':
     mnist_tr = mnistdf.loc[~mnistdf.index.isin(te_index), :]
     # 用集成模型训练 & 预测
     ensemble_func_lst = [i for i in dir(skl.ensemble) if 'Classifier' in i and 'Voting' not in i]
-    print(ensemble_func_lst)
+    res_list = []
     for clf_ in ensemble_func_lst:
-        print(f'test clf_: {clf_}')
-        msg=sklearn_clf(eval(f'skl.ensemble.{clf_}'), mnist_tr, mnist_te)
-        print(msg)
+        res_list.append(sklearn_clf(eval(f'skl.ensemble.{clf_}'), mnist_tr, mnist_te))
 
