@@ -51,3 +51,12 @@ if __name__ == '__main__':
     for clf_ in ensemble_func_lst:
         res_list.append(sklearn_clf(eval(f'skl.ensemble.{clf_}'), mnist_tr, mnist_te))
 
+
+"""
+sklearn_clf, take_time:43.97123s >> model: AdaBoostClassifier, acc: 70.88
+sklearn_clf, take_time:62.52457s >> model: BaggingClassifier, acc: 91.86
+sklearn_clf, take_time:3.11310s >> model: ExtraTreesClassifier, acc: 92.34
+sklearn_clf, take_time:1510.23123s >> model: GradientBoostingClassifier, acc: 93.48
+sklearn_clf, take_time:3.57081s >> model: RandomForestClassifier, acc: 91.63
+
+"""
