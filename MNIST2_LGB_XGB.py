@@ -8,27 +8,9 @@ import numpy as np
 from sklearn.datasets import fetch_mldata
 import xgboost as xgb
 import lightgbm as lgb
-import time
-from functools import wraps
+from utils.utils_tools import clock, get_ministdata
 import warnings
 warnings.filterwarnings(action='ignore')
-
-def clock(func):
-    @wraps(func)
-    def clocked(*args, **kwargs):
-        st = time.perf_counter()
-        res = func(*args, **kwargs)
-        take_time = time.perf_counter() - st
-        fmt = '{func_name}, take_time:{take_time:.5f}s >> {res}'
-        print(fmt.format(func_name=func.__name__, take_time=take_time, res=res))
-        return res
-    return clocked
-
-def get_ministdata():
-    data_home = r'D:\Python_data\My_python\Projects\MNIST_Subject\mnist_data'
-    mnist = fetch_mldata('MNIST original', data_home=data_home)
-    return pd.DataFrame(np.c_[mnist['data']/255, mnist['target']])
-
 
 lgb_param = {
     'boosting': 'gbdt',
@@ -90,8 +72,6 @@ def lgb_xgb_train(model, param, tr, te ):
     acc_ = sum(pred == y_te)/len(y_te) * 100
     return f'model: {model.__name__}, acc: {acc_:.2f}'
 
-# help(xgb.train)
-
 if __name__ == '__main__':
     mnistdf = get_ministdata()
     te_index = mnistdf.sample(frac=0.8).index.tolist()
@@ -101,7 +81,6 @@ if __name__ == '__main__':
     resxgb = lgb_xgb_train(xgb, xgb_param, mnist_tr, mnist_te)
     print('train lgb ...')
     reslgb = lgb_xgb_train(lgb, lgb_param, mnist_tr, mnist_te)
-
 
 """
 train xgb ...
