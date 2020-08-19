@@ -6,7 +6,7 @@
 from sklearn.ensemble import RandomForestClassifier
 import sklearn as skl
 from multiprocessing import Pool
-from mnist_sklearn import get_ministdata, sklearn_clf # MNIST1_sklearn.ensemble集成模型训练.py 该文件 __name__后面注释
+from mnist_sklearn import get_ministdata, sklearn_clf # MNIST1_sklearn.py
 
 if __name__ == '__main__':
     mnistdf = get_ministdata()
