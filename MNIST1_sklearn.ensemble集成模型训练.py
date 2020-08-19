@@ -8,25 +8,8 @@ import numpy as np
 from sklearn.datasets import fetch_mldata
 import warnings
 warnings.filterwarnings(action='ignore')
-import time
-from functools import wraps
+from utils.utils_tools import clock, get_ministdata
 
-
-def clock(func):
-    @wraps(func)
-    def clocked(*args, **kwargs):
-        st = time.perf_counter()
-        res = func(*args, **kwargs)
-        take_time = time.perf_counter() - st
-        fmt = '{func_name}, take_time:{take_time:.5f}s >> {res}'
-        print(fmt.format(func_name=func.__name__, take_time=take_time, res=res))
-        return res
-    return clocked
-
-def get_ministdata():
-    data_home = r'D:\Python_data\My_python\Projects\MNIST_Subject\mnist_data'
-    mnist = fetch_mldata('MNIST original', data_home=data_home)
-    return pd.DataFrame(np.c_[mnist['data']/255, mnist['target']])
 
 @clock
 def sklearn_clf(clf_model_func, tr, te):
@@ -40,23 +23,20 @@ def sklearn_clf(clf_model_func, tr, te):
 
 from sklearn.ensemble import RandomForestClassifier
 import sklearn as skl
+from multiprocessing import Pool
+
+# 一个文件产生错误，把函数定义放在另一个py文件中再引入 
+
 if __name__ == '__main__':
     mnistdf = get_ministdata()
     te_index = mnistdf.sample(frac=0.8).index.tolist()
     mnist_te = mnistdf.loc[te_index, :]
     mnist_tr = mnistdf.loc[~mnistdf.index.isin(te_index), :]
+    # pool = Pool(processes=4) # 进程池
     # 用集成模型训练 & 预测
     ensemble_func_lst = [i for i in dir(skl.ensemble) if 'Classifier' in i and 'Voting' not in i]
+    # pool.starmap_async(sklearn_clf, [ [eval(f'skl.ensemble.{clf_}') ,mnist_tr, mnist_te] for clf_ in ensemble_func_lst ])
     res_list = []
     for clf_ in ensemble_func_lst:
         res_list.append(sklearn_clf(eval(f'skl.ensemble.{clf_}'), mnist_tr, mnist_te))
-
-
-"""
-sklearn_clf, take_time:43.97123s >> model: AdaBoostClassifier, acc: 70.88
-sklearn_clf, take_time:62.52457s >> model: BaggingClassifier, acc: 91.86
-sklearn_clf, take_time:3.11310s >> model: ExtraTreesClassifier, acc: 92.34
-sklearn_clf, take_time:1510.23123s >> model: GradientBoostingClassifier, acc: 93.48
-sklearn_clf, take_time:3.57081s >> model: RandomForestClassifier, acc: 91.63
-
-"""
+    print('sucesses')
